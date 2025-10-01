@@ -1,13 +1,38 @@
-Branch Name:
-feature/implement-delete-report-endpoints
-Commit Message:
-feat: Implement delete report and PBIX report endpoints
+const onDeleteClick = async () => {
+  const deletedRow = getSelectedRowData();
 
-- Implemented deletePbixReport method in PgRiskMonitoringService for deleting PBIX reports via DELETE API call to /riskmonitoring/api/PbiReport/DeletePBIXReport
-- Implemented deleteReport method in PgRiskMonitoringService for deleting regular reports via DELETE API call to /riskmonitoring/api/RiskReport/DeleteReport
-- Added riskMonitoringService dependency to ReportSharedComponent to enable delete report functionality
-- Integrated deletePbixReport API call in ManagePBIReport onDeleteClick handler with error handling and grid refresh
-- Integrated deleteReport API call in ReportSharedComponent onDeleteClick handler with error handling and success notifications
-- Both methods accept reportKey parameter and include proper error logging
+  if (deletedRow && deletedRow.length > 0) {
+    confirmDialog(deletedRow[0]?.reportName);
+    setIsOpen(true);
+  }
 
-Related: RBW-712118
+  try {
+    const reportId = deletedRow[0]?.reportKey;
+
+    if (reportId) {
+      // Delete PBIX Report
+      const response = await riskMonitoringService.deletePbixReport(reportId);
+
+      // Check if deletion was successful
+      if (response && response.success) {
+        // Show success message
+        rootContext.showInfo('Report deleted successfully.');
+
+        // Reload reports to refresh the grid
+        await loadReports();
+      } else {
+        // Show error if response indicates failure
+        const errorMessage = response?.message || 'Failed to delete report.';
+        rootContext.showError(`${errorMessage} Please try again.`);
+        console.error('Delete failed', response);
+      }
+    }
+  } catch (err: any) {
+    // Handle error
+    const errMessage = 'Error deleting report!';
+    rootContext.showError(`${errMessage} Please try again sometime.`);
+    console.error('Delete error!', err);
+  }
+} else {
+  rootContext.showInfo('Please select a report to delete.');
+}
