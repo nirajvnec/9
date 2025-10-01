@@ -2,7 +2,7 @@ const onDeleteClick = async () => {
   const deletedRow = getSelectedRowData();
 
   if (deletedRow && deletedRow.length > 0) {
-    confirmDialog(deletedRow[0]?.reportName);
+    setReportName(deletedRow[0]?.reportName);
     setIsOpen(true);
 
     try {
